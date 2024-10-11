@@ -6,7 +6,7 @@ port="${2:-8019}"  # Default port value is 8019
 question_file="${3:-question.jsonl}" # Default question_file value is 'question.jsonl'
 output_dir="${4:-None}"  # Default output_dir value is 'None'
 
-model_max_length=$(jq '.max_position_embeddings' $model_name/config.json)
+model_max_length=$(python3 -c "import json; print(json.load(open('$model_name/config.json'))['max_position_embeddings'])")
 # vllm max length is 8192 if model max length is greater than 8192 or model_max_length does not exist
 vllm_max_length=$((model_max_length > 8192 || model_max_length == null ? 8192 : model_max_length))
 echo "Model max length: $model_max_length, VLLM max length: $vllm_max_length"
