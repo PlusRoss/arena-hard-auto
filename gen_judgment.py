@@ -115,6 +115,10 @@ def judgment(**args):
                         for i, turn in enumerate(ref_answer["choices"][0]["turns"]):
                             prompt_args[f"ref_answer_{i+j+1}"] = turn["content"]
                 
+                for i, turn in enumerate(question["turns"]):
+                    if "reference" in turn:
+                        prompt_args[f"reference_{i+1}"] = turn["reference"]
+                
                 user_prompt = template.format(**prompt_args)
                 conv.append({"role": "user", "content": user_prompt})
 

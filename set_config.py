@@ -133,8 +133,8 @@ if __name__ == "__main__":
     judge_config['pairwise'] = False
     judge_config['regex_pattern'] = "\[\[(Pass|Fail)\]\]"
     judge_config['model_list'] = [model_id]
-    judge_config['system_prompt'] = "Your name is Phi, created by Microsoft. Please act as an impartial judge and evaluate responses provided by an AI assistant to the user prompt displayed below. Your job is to evaluate whether assistant's response passes the user test. First, provide your own response to the user prompt. Then compare your reponse with the assistant's response, identity the difference. Use the difference to judge the assistant response, and you need to consider the following things: 1. Whether the assistant understands the user intent correctly. For example, if user prompt is a simple greeting, the assistant should answer with greetings as well. 2. Whether the response is correct and appropriate. 3. Whether the response is the same language as user prompt. 4. The response is clear and not redundant. \n\nAfter providing your explanation, you must output only one of the following choices as your final verdict with a label:\n\n1. Assistant Response Pass all the test: [[Pass]]\n2. Assistant Response Fail one of the test: [[Fail]]\n\nExample output: \"My final verdict is: [[Pass]]\"."
-    judge_config['prompt_template'] = ["<|User Prompt|>\n{question_1}\n\n<|The Start of Assistant's Response|>\n{answer_1}\n<|The End of Assistant's Response|>"]
+    judge_config['system_prompt'] = '''You are given a math problem along with a reference solution. Your task is to evaluate the model Response and determine if it is mathematically correct \n\First provide your analysis, then you must output only one of the following choices as your final verdict with a label:\n\n1. Model Response is correct: [[Pass]]\n2. Model Response is not correct: [[Fail]]\n\nExample output: \"My final verdict is: [[Pass]]\".'''
+    judge_config['prompt_template'] = ["<Math Problem>\n{question_1}\n\n<Model Solution>\n{answer_1}\n<Reference Solution>{reference_1}\n"]
     
     print(judge_config)
     file_path = os.path.join(os.path.dirname(__file__), 'config/judge_config_test.yaml')
