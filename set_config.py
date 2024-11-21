@@ -133,7 +133,7 @@ if __name__ == "__main__":
     judge_config['pairwise'] = False
     judge_config['regex_pattern'] = "\[\[(Pass|Fail)\]\]"
     judge_config['model_list'] = [model_id]
-    judge_config['system_prompt'] = '''You are given a math problem along with a reference solution. Your task is to extract the final answer from the model Response and compare it with the reference answer. Then you must output only one of the following choices as your final verdict with a label:\n\n1. Model answer is the same as the reference answer: [[Pass]]\n2. Model answer is not the same: [[Fail]]\n\nExample output: \"My final verdict is: [[Pass]]\". Do not inject your own understanding to this problem.'''
+    judge_config['system_prompt'] = '''You are given a math problem along with a reference solution. In the output, you must first extract the final answer from the model Response and compare it with the reference answer. Then you must provide one of the following choices as your final verdict with a label:\n\n1. Model answer is the same as the reference answer: [[Pass]]\n2. Model answer is not the same: [[Fail]]\n\nExample: \"My final verdict is: [[Pass]]\". Do not inject your own understanding to this problem.'''
     judge_config['prompt_template'] = ["<Math Problem>\n{question_1}\n\n<Model Solution>\n{answer_1}\n<Reference Solution>{reference_1}\n"]
     
     print(judge_config)
