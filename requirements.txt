@@ -10,3 +10,6 @@ plotly
 scikit-learn
 azureml.core
 azure.identity
+jsonlines
+tabulate
+fasttext-langdetect==1.0.5

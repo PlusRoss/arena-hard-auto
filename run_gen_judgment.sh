@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Command line arguments with defaults
-input_dir="${1:-None}"
-output_dir="${2:-None}"
+question_file="${1:-question.jsonl}"
+input_dir="${2:-None}"
+output_dir="${3:-None}"
 
 # Check if input directory is not 'None' and copy data from it
 if [ "$input_dir" != "None" ]; then
@@ -10,7 +11,7 @@ if [ "$input_dir" != "None" ]; then
 fi
 
 # Run judgment generation
-python gen_judgment.py --setting-file config/judge_config_test.yaml --endpoint-file config/api_config_test.yaml
+python gen_judgment.py --setting-file config/judge_config_test.yaml --endpoint-file config/api_config_test.yaml --question-file $question_file
 
 # load config/judge_config_test.yaml and extract judge_name
 judge_name=$(python -c "import yaml; print(yaml.safe_load(open('config/judge_config_test.yaml'))['judge_model'])")

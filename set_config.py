@@ -39,7 +39,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--judge_model_name", type=str, help="name of the judge model",
-        default="tscience-uks-gpt4-1106", choices=["tscience-uks-gpt4-1106", "tscience-uks-gpt-4o"]
+        default="tscience-uks-gpt-4o", choices=["tscience-uks-gpt4-1106", "tscience-uks-gpt-4o"]
+    )
+    parser.add_argument(
+        "--baseline_model_name", type=str, help="name of the baseline model",
+        default="tscience-uks-gpt-35-turbo-1106", choices=["tscience-uks-gpt-35-turbo-1106", "tscience-uks-gpt-4o"]
     )
     parser.add_argument(
         "--is_aml_run", type=str, default="True", help="if it is an AML run"
@@ -53,6 +57,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--port", type=str, default="8008", help="port for hosting vllm"
     )
+    parser.add_argument(
+        "--max_answer_tokens", type=int, default=2048, help="max tokens for generating answer"
+    )
+    parser.add_argument(
+        "--categories", type=str, default="all", help="categories for generating answer, split by comma"
+    )
     args = parser.parse_args()
 
     # read the api_config file
@@ -60,18 +70,23 @@ if __name__ == "__main__":
     with open(file_path, 'r') as file:
         api_config = yaml.safe_load(file)
     
-    judge_model_name = args.judge_model_name
-    add_dict = {judge_model_name: 
-                    {'model_name': judge_model_name, 
-                    'endpoints': [{
-                                    'api_base': 'https://aims-oai-research-inference-uks.openai.azure.com/', 
-                                    'api_version': '2024-02-01'
-                                }],
-                    'api_type': 'azure', 
-                    'parallel': 8,
+    model_name_list = ["tscience-uks-gpt-35-turbo-1106", "tscience-uks-gpt4-1106", "tscience-uks-gpt-4o"]
+    for model_name_api in model_name_list:
+        if model_name_api == "tscience-uks-gpt4-1106":
+            parallel = 8
+        else:
+            parallel = 16
+        add_dict = {model_name_api: 
+                        {'model_name': model_name_api, 
+                        'endpoints': [{
+                                        'api_base': 'https://aims-oai-research-inference-uks.openai.azure.com/', 
+                                        'api_version': '2024-02-01'
+                                    }],
+                        'api_type': 'azure', 
+                        'parallel': parallel,
+                        }
                     }
-                }
-    api_config.update(add_dict)
+        api_config.update(add_dict)
 
     # add test model api
     model_id = args.model_id
@@ -98,7 +113,8 @@ if __name__ == "__main__":
         gen_answer_config = yaml.safe_load(file)
 
     gen_answer_config['model_list'] = [model_id]
-    gen_answer_config['max_tokens'] = 2048 # reduce this from 4096 to 2048 since phi model has a limit of 4k tokens
+    gen_answer_config['max_tokens'] = args.max_answer_tokens
+    gen_answer_config['categories'] = args.categories.split(',')
 
     print(gen_answer_config)
     file_path = os.path.join(os.path.dirname(__file__), 'config/gen_answer_config_test.yaml')
@@ -111,9 +127,15 @@ if __name__ == "__main__":
     with open(file_path, 'r') as file:
         judge_config = yaml.safe_load(file)
 
-    judge_config['judge_model'] = judge_model_name
+    judge_config['judge_model'] = args.judge_model_name
+    # del judge_config['baseline_model']
+    judge_config['baseline'] = False
+    judge_config['pairwise'] = False
+    judge_config['regex_pattern'] = "\[\[(Pass|Fail)\]\]"
     judge_config['model_list'] = [model_id]
-
+    judge_config['system_prompt'] = '''You are given a math problem along with a reference solution. In the output, you must first extract the final answer from the model Response and compare it with the reference answer. Then you must provide one of the following choices as your final verdict with a label:\n\n1. Model answer is the same as the reference answer: [[Pass]]\n2. Model answer is not the same: [[Fail]]\n\nExample: \"The model answer is XXX. The reference answer is XXX. My final verdict is: [[Pass]]\". Do not inject your own understanding to this problem.'''
+    judge_config['prompt_template'] = ["<Math Problem>\n{question_1}\n\n<Model Solution>\n{answer_1}\n<Reference Solution>{reference_1}\n"]
+    
     print(judge_config)
     file_path = os.path.join(os.path.dirname(__file__), 'config/judge_config_test.yaml')
     with open(file_path, 'w') as file:

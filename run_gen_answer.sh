@@ -16,7 +16,7 @@ echo "Model max length: $model_max_length, VLLM max length: $vllm_max_length"
 python -m vllm.entrypoints.openai.api_server --model "$model_name" --max-model-len $vllm_max_length --dtype auto --api-key token-abc123 --port "$port" --trust-remote-code &
 
 # Wait for the server to start
-sleep 30
+sleep 60
 
 # Run answer generation 
 python gen_answer.py --setting-file config/gen_answer_config_test.yaml --endpoint-file config/api_config_test.yaml --question-file "$question_file"
